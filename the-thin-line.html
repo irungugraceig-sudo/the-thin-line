@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grace Wanjiru Irungu — The Thin Line</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#08060a;color:#ddd8cc;font-family:'Inter',sans-serif;height:100vh;width:100vw;overflow:hidden}
+  canvas#bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
+  .grain{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .vig{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none;background:radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,.75)100%)}
+
+  .app{position:relative;z-index:3;display:grid;grid-template-columns:260px 1fr;height:100vh;width:100vw}
+
+  /* ── Side ── */
+  .side{border-right:1px solid rgba(255,255,255,.05);background:rgba(0,0,0,.45);backdrop-filter:blur(30px);display:flex;flex-direction:column;overflow-y:auto;padding:14px}
+  .side::-webkit-scrollbar{width:3px}
+  .side::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px}
+
+  .av-area{text-align:center;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.05)}
+  .av{width:64px;height:64px;border-radius:50%;margin:0 auto 8px;background:linear-gradient(135deg,#D4A574,#FFD700);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;color:#08060a;box-shadow:0 0 18px rgba(255,215,0,.25),0 0 0 3px rgba(212,165,116,.15),0 0 0 6px rgba(255,215,0,.08);transition:all 1.2s;overflow:hidden}
+  .av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+  .av.speaking{animation:avSpeak 1.5s ease-in-out infinite}
+  @keyframes avSpeak{0%,100%{box-shadow:0 0 18px rgba(255,215,0,.25),0 0 0 3px rgba(212,165,116,.15)}50%{box-shadow:0 0 30px rgba(255,215,0,.5),0 0 0 3px rgba(212,165,116,.3),0 0 0 6px rgba(255,215,0,.15)}}
+  .nm{font-family:'Cinzel',serif;font-size:13px;letter-spacing:2px}
+  .tl{font-size:8px;font-family:'JetBrains Mono',monospace;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-top:3px;transition:color 1s}
+  .es{font-size:10.5px;color:rgba(255,255,255,.35);margin-top:8px;line-height:1.6;font-style:italic}
+
+  .sec{margin-top:12px}
+  .sh{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.2);margin-bottom:6px}
+
+  .an{display:flex;gap:8px;padding:6px 7px;border-radius:5px;cursor:pointer;transition:all .3s;position:relative;margin-bottom:1px}
+  .an:hover{background:rgba(255,255,255,.04)}
+  .an.act{background:rgba(212,165,116,.07);outline:1px solid rgba(212,165,116,.12)}
+  .ad{width:7px;height:7px;min-width:7px;border-radius:50%;margin-top:4px;background:rgba(255,255,255,.1);transition:all .5s}
+  .an.dn .ad{background:#D4A574;box-shadow:0 0 5px rgba(212,165,116,.3)}
+  .an.nw .ad{background:#FFD700;box-shadow:0 0 6px rgba(255,215,0,.4);animation:pl 2s ease-in-out infinite}
+  @keyframes pl{0%,100%{box-shadow:0 0 5px rgba(255,215,0,.3)}50%{box-shadow:0 0 12px rgba(255,215,0,.6)}}
+  .al{position:absolute;left:17px;top:18px;width:1px;height:calc(100% - 4px);background:rgba(255,255,255,.05)}
+  .an:last-child .al{display:none}
+  .an.dn .al{background:rgba(212,165,116,.15)}
+  .ai h4{font-size:10px;font-weight:500;color:rgba(255,255,255,.6)}
+  .ai p{font-size:8px;color:rgba(255,255,255,.25);margin-top:1px}
+
+  .st{display:flex;align-items:center;gap:5px;margin-bottom:4px;font-size:9px}
+  .sn{width:90px;color:rgba(255,255,255,.4);flex-shrink:0}
+  .sb{flex:1;height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+  .sf{height:100%;border-radius:2px}
+  .sv{width:20px;font-family:'JetBrains Mono',monospace;font-size:8px;color:rgba(255,255,255,.25);text-align:right}
+
+  .links{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+  .link-btn{font-size:9px;font-family:'JetBrains Mono',monospace;padding:5px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02);color:rgba(255,255,255,.35);text-decoration:none;transition:all .25s;display:flex;align-items:center;gap:4px;cursor:pointer}
+  .link-btn:hover{border-color:rgba(212,165,116,.3);color:#D4A574;background:rgba(212,165,116,.05)}
+  .link-btn.dl-resume{background:linear-gradient(135deg,rgba(212,165,116,.08),rgba(255,215,0,.04));border-color:rgba(212,165,116,.15);width:100%;justify-content:center;padding:7px 10px;font-size:10px}
+  .link-btn.dl-resume:hover{background:linear-gradient(135deg,rgba(212,165,116,.15),rgba(255,215,0,.08))}
+
+  .badge{text-align:center;padding:7px;border-radius:5px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.03);margin-top:auto}
+  .badge .bl{font-size:7px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;color:rgba(255,255,255,.18);text-transform:uppercase}
+  .badge .bn{font-family:'Cinzel',serif;font-size:11px;color:#D4A574;margin-top:2px;transition:color 1s}
+
+  /* ── Chat ── */
+  .chat{display:flex;flex-direction:column;overflow:hidden;height:100vh}
+  .ch{padding:12px 20px;border-bottom:1px solid rgba(255,255,255,.05);background:rgba(0,0,0,.3);backdrop-filter:blur(20px);display:flex;align-items:center;gap:10px;flex-shrink:0}
+  .dl{width:7px;height:7px;border-radius:50%;background:#4ADE80;box-shadow:0 0 5px rgba(74,222,128,.3)}
+  .ch h2{font-family:'Cinzel',serif;font-size:13px;font-weight:400;letter-spacing:2px}
+  .ch .su{font-size:9px;color:rgba(255,255,255,.28);font-family:'JetBrains Mono',monospace;letter-spacing:1px;margin-top:1px}
+  .api-badge{margin-left:auto;font-size:8px;font-family:'JetBrains Mono',monospace;padding:3px 8px;border-radius:8px;letter-spacing:1px}
+  .api-badge.on{background:rgba(74,222,128,.1);color:#4ADE80;border:1px solid rgba(74,222,128,.2)}
+  .api-badge.off{background:rgba(255,255,255,.03);color:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.05);cursor:pointer}
+  .api-badge.off:hover{border-color:rgba(255,255,255,.15)}
+
+  .ms{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth;min-height:0}
+  .ms::-webkit-scrollbar{width:3px}
+  .ms::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px}
+
+  .m{max-width:85%;animation:mI .35s ease}
+  @keyframes mI{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  .m.g{align-self:flex-start}
+  .m.u{align-self:flex-end}
+  .mw{font-size:8px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.2);margin-bottom:3px;padding:0 2px}
+  .m.g .mw{color:#D4A574}
+  .mb{padding:11px 15px;border-radius:11px;font-size:13.5px;line-height:1.7;font-weight:300}
+  .m.g .mb{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-bottom-left-radius:3px}
+  .m.u .mb{background:linear-gradient(135deg,rgba(212,165,116,.1),rgba(255,215,0,.06));border:1px solid rgba(212,165,116,.12);border-bottom-right-radius:3px}
+  .mb strong{color:#D4A574;font-weight:500}
+  .mb em{color:rgba(255,255,255,.45)}
+  .mb .verse{font-style:italic;border-left:2px solid rgba(212,165,116,.3);padding-left:12px;margin:8px 0;color:rgba(255,255,255,.5);line-height:1.9}
+
+  .tp{display:flex;gap:3px;padding:11px 15px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:11px;border-bottom-left-radius:3px;width:fit-content}
+  .tp span{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.25);animation:tb 1.4s ease-in-out infinite}
+  .tp span:nth-child(2){animation-delay:.15s}.tp span:nth-child(3){animation-delay:.3s}
+  @keyframes tb{0%,60%,100%{transform:translateY(0);opacity:.25}30%{transform:translateY(-4px);opacity:.8}}
+
+  .qs{padding:8px 20px;display:flex;flex-wrap:wrap;gap:5px;flex-shrink:0}
+  .qb{font-size:11px;font-family:'Inter',sans-serif;padding:6px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02);color:rgba(255,255,255,.4);cursor:pointer;transition:all .25s;white-space:nowrap}
+  .qb:hover{border-color:rgba(212,165,116,.3);color:#D4A574;background:rgba(212,165,116,.05)}
+
+  .ia{padding:12px 20px 18px;border-top:1px solid rgba(255,255,255,.05);display:flex;gap:8px;background:rgba(0,0,0,.3);backdrop-filter:blur(20px);flex-shrink:0}
+  .ip{flex:1;padding:11px 14px;border-radius:9px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);color:#ddd8cc;font-family:'Inter',sans-serif;font-size:13.5px;outline:none;transition:border-color .3s}
+  .ip:focus{border-color:rgba(212,165,116,.3)}
+  .ip::placeholder{color:rgba(255,255,255,.18)}
+  .sb2{width:42px;height:42px;border-radius:9px;border:none;background:linear-gradient(135deg,#D4A574,#FFD700);color:#000;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s}
+  .sb2:hover{transform:scale(1.05);box-shadow:0 0 16px rgba(255,215,0,.3)}
+
+  /* API Key Modal */
+  .modal-bg{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+  .modal-bg.open{display:flex}
+  .modal{background:#12111a;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:28px;max-width:440px;width:90%}
+  .modal h3{font-family:'Cinzel',serif;font-size:16px;margin-bottom:6px;letter-spacing:1px}
+  .modal p{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px;line-height:1.6}
+  .modal input{width:100%;padding:10px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#ddd8cc;font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;margin-bottom:12px}
+  .modal input:focus{border-color:rgba(212,165,116,.3)}
+  .modal-btns{display:flex;gap:8px;justify-content:flex-end}
+  .modal-btns button{padding:8px 18px;border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;cursor:pointer;transition:all .2s}
+  .mbtn-cancel{background:none;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4)}
+  .mbtn-cancel:hover{border-color:rgba(255,255,255,.2)}
+  .mbtn-save{background:linear-gradient(135deg,#D4A574,#FFD700);border:none;color:#000;font-weight:500}
+  .mbtn-save:hover{transform:scale(1.02)}
+
+  @media(max-width:860px){.app{grid-template-columns:1fr}.side{display:none}}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="grain"></div>
+<div class="vig"></div>
+
+<!-- API Key Modal -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h3>Connect Grace's Mind</h3>
+    <p>Add an Anthropic API key to unlock Grace's full AI — she'll understand any question and respond in her real voice. Without it, she uses pre-written responses (still good, but limited).</p>
+    <input id="apiKeyInput" type="password" placeholder="sk-ant-api03-..." />
+    <div class="modal-btns">
+      <button class="mbtn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="mbtn-save" onclick="saveKey()">Connect</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+<div class="side">
+  <div class="av-area">
+    <div class="av" id="av">G</div>
+    <div class="nm">Grace Wanjiru Irungu</div>
+    <div class="tl" id="titleLine">Becoming</div>
+    <div class="es">"The chaos is the chrysalis. I'm not scattered. I'm synthesizing."</div>
+  </div>
+
+  <div class="sec">
+    <div class="sh">The Arc</div>
+    <div class="an dn" onclick="ask('Tell me about your time deploying cables in Africa')"><div><div class="ad"></div><div class="al"></div></div><div class="ai"><h4>The Infrastructure</h4><p>2018–2025 · $102M · 4 countries</p></div></div>
+    <div class="an dn" onclick="ask('What happened at Lake Tanganyika?')"><div><div class="ad"></div><div class="al"></div></div><div class="ai"><h4>Lake Tanganyika</h4><p>1,400m · No playbook</p></div></div>
+    <div class="an dn" onclick="ask('Why did you leave Kenya for Boston?')"><div><div class="ad"></div><div class="al"></div></div><div class="ai"><h4>The Crossing</h4><p>Kenya → Boston</p></div></div>
+    <div class="an dn" onclick="ask('Tell me about your first semester — the panic, the building, all of it')"><div><div class="ad"></div><div class="al"></div></div><div class="ai"><h4>The Transformation</h4><p>Oct–Mar · Panic → Execution</p></div></div>
+    <div class="an dn" onclick="ask('Why did you go deeper than AI?')"><div><div class="ad"></div><div class="al"></div></div><div class="ai"><h4>Always Check Infrastructure</h4><p>"It's in the basics, nanoscale"</p></div></div>
+    <div class="an nw" onclick="ask('Tell me about the chaos — the day you applied to 10 internships and ended up designing dome data centers')"><div><div class="ad"></div><div class="al"></div></div><div class="ai"><h4>The Chaos Day</h4><p>Panic → Vision → Execution</p></div></div>
+    <div class="an" onclick="ask('Where is all this going? What are you becoming?')"><div><div class="ad"></div></div><div class="ai"><h4>The Becoming</h4><p>Where it all folds together</p></div></div>
+  </div>
+
+  <div class="sec">
+    <div class="sh">Strengths</div>
+    <div class="st"><span class="sn">Systems</span><div class="sb"><div class="sf" style="width:95%;background:linear-gradient(90deg,#D4622B,#FFD700)"></div></div><span class="sv">95</span></div>
+    <div class="st"><span class="sn">Courage</span><div class="sb"><div class="sf" style="width:98%;background:linear-gradient(90deg,#FF6B9D,#FFD700)"></div></div><span class="sv">98</span></div>
+    <div class="st"><span class="sn">Resilience</span><div class="sb"><div class="sf" style="width:95%;background:linear-gradient(90deg,#D4622B,#FFD700)"></div></div><span class="sv">95</span></div>
+    <div class="st"><span class="sn">Patterns</span><div class="sb"><div class="sf" style="width:92%;background:linear-gradient(90deg,#7B61FF,#00D4FF)"></div></div><span class="sv">92</span></div>
+    <div class="st"><span class="sn">Execution</span><div class="sb"><div class="sf" style="width:90%;background:linear-gradient(90deg,#D4622B,#FFD700)"></div></div><span class="sv">90</span></div>
+  </div>
+  <div class="sec">
+    <div class="sh">Growth Edges</div>
+    <div class="st"><span class="sn">Device Physics</span><div class="sb"><div class="sf" style="width:40%;background:linear-gradient(90deg,#FF4444,#FF8844)"></div></div><span class="sv">40</span></div>
+    <div class="st"><span class="sn">Lab Technique</span><div class="sb"><div class="sf" style="width:35%;background:linear-gradient(90deg,#FF4444,#FF8844)"></div></div><span class="sv">35</span></div>
+  </div>
+
+  <div class="sec">
+    <div class="sh">Connect</div>
+    <div class="links">
+      <a class="link-btn" href="https://www.linkedin.com/in/irungu-w-grace/" target="_blank" rel="noopener">↗ LinkedIn</a>
+      <a class="link-btn" href="https://github.com/irungugraceig-sudo" target="_blank" rel="noopener">↗ GitHub</a>
+      <a class="link-btn" href="https://irungugraceig-sudo.github.io/northeastern-networking-projects/" target="_blank" rel="noopener">↗ Projects</a>
+      <a class="link-btn" href="https://ruganojournal.wordpress.com/" target="_blank" rel="noopener">↗ Rugano</a>
+    </div>
+    <div class="links" style="margin-top:6px">
+      <a class="link-btn dl-resume" href="grace-resume.html" download>↓ Download Resume</a>
+    </div>
+  </div>
+
+  <div class="badge">
+    <div class="bl">Scene</div>
+    <div class="bn" id="sceneNm">Red Earth</div>
+  </div>
+</div>
+
+<div class="chat">
+  <div class="ch">
+    <div class="dl"></div>
+    <div><h2>Grace</h2><div class="su" id="mood">the chaos is the chrysalis · I'm becoming something new</div></div>
+    <div class="api-badge off" id="apiBadge" onclick="openModal()">+ connect ai</div>
+  </div>
+  <div class="ms" id="ms"></div>
+  <div class="qs" id="qs">
+    <button class="qb" onclick="ask(this.textContent)">Who are you?</button>
+    <button class="qb" onclick="ask(this.textContent)">Tell me about the transformation</button>
+    <button class="qb" onclick="ask(this.textContent)">Why go deeper than AI?</button>
+    <button class="qb" onclick="ask(this.textContent)">What would you bring to our team?</button>
+    <button class="qb" onclick="ask(this.textContent)">What scares you?</button>
+    <button class="qb" onclick="ask(this.textContent)">Tell me about the chaos day</button>
+    <button class="qb" onclick="ask(this.textContent)">Tell me about sonoluminescence</button>
+    <button class="qb" onclick="ask(this.textContent)">What are you becoming?</button>
+  </div>
+  <div class="ia">
+    <input class="ip" id="inp" placeholder="Ask Grace anything..." autocomplete="off"/>
+    <button class="sb2" id="snd">&#10148;</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ═══════════════════════════════════
+// CANVAS
+// ═══════════════════════════════════
+const CV=document.getElementById('bg'),X=CV.getContext('2d');let W,H;
+function rz(){W=CV.width=innerWidth;H=CV.height=innerHeight}rz();addEventListener('resize',rz);
+const SC={
+  origin:{sky:['#1a0a04','#3d1a0a','#8B4513','#D4622B','#FFB347'],gd:'#2a1508',ln:'#FFD700',gl:'rgba(255,215,0,.4)',pc:['#FFD700','#D4622B','#FF8C42','#4A7C3F'],nm:'Red Earth'},
+  deep:{sky:['#020810','#0A1628','#0E2444','#1A3A5F','#1E5070'],gd:'#040C18',ln:'#00CED1',gl:'rgba(0,206,209,.4)',pc:['#00CED1','#00FF88','#4488CC','#66DDFF'],nm:'Deep Water'},
+  wound:{sky:['#0A0010','#1A0A2E','#2D0040','#3D0066','#1A0A2E'],gd:'#08000F',ln:'#FF0040',gl:'rgba(255,0,64,.5)',pc:['#FF0040','#FF4488','#AA00FF'],nm:'The Question'},
+  cross:{sky:['#1a0a04','#2D1B4E','#1A0A2E','#4A2080','#2D1B4E'],gd:'#0A0510',ln:'#FFFFFF',gl:'rgba(255,255,255,.3)',pc:['#FFD700','#FFFFFF','#AA88FF'],nm:'The Crossing'},
+  nano:{sky:['#04080A','#0A1820','#0E2838','#1A4050','#0E2838'],gd:'#040810',ln:'#00D4FF',gl:'rgba(0,212,255,.4)',pc:['#00D4FF','#00FF88','#4488FF'],nm:'Nanoscale'},
+  build:{sky:['#0A0818','#1A1030','#2D1B4E','#4A2878','#2D1B4E'],gd:'#08060F',ln:'#7B61FF',gl:'rgba(123,97,255,.4)',pc:['#7B61FF','#FF6B9D','#00D4FF'],nm:'Building'},
+  faith:{sky:['#0A0804','#1A1408','#2D2010','#D4A040','#FFD700'],gd:'#1A1208',ln:'#FFD700',gl:'rgba(255,215,0,.5)',pc:['#FFD700','#FFF8DC','#D4A040'],nm:'The Light'},
+  fear:{sky:['#080404','#1A0808','#2D0A0A','#4A1010','#2D0808'],gd:'#0A0404',ln:'#FF2020',gl:'rgba(255,32,32,.3)',pc:['#FF2020','#FF6644','#CC0000'],nm:'The Wound'},
+  vision:{sky:['#0A0510','#1A1040','#2D2060','#D4622B','#FFD700'],gd:'#08040A',ln:'#00D4FF',gl:'rgba(0,212,255,.5)',pc:['#00D4FF','#FFD700','#7B61FF','#00FF88'],nm:'The Becoming'},
+  chaos:{sky:['#0A0408','#1A0A18','#2D1030','#4A1848','#D4622B'],gd:'#0A0408',ln:'#FF6B9D',gl:'rgba(255,107,157,.4)',pc:['#FF6B9D','#FFD700','#7B61FF','#00D4FF','#FF4444'],nm:'The Chrysalis'},
+};
+let cS='origin',tS='origin',bl=0,tm=0;
+class Pt{constructor(){this.r()}r(){const s=SC[cS];this.x=Math.random()*W;this.y=Math.random()*H;this.s=Math.random()*2+.4;this.vx=(Math.random()-.5)*.3;this.vy=-Math.random()*.5-.08;this.c=s.pc[Math.floor(Math.random()*s.pc.length)];this.o=Math.random()*.4+.1;this.l=1;this.d=Math.random()*.002+.001}u(){this.x+=this.vx;this.y+=this.vy;this.l-=this.d;if(this.l<=0||this.y<-10){this.r();this.y=H+10}}w(){X.save();X.globalAlpha=this.o*this.l;X.beginPath();X.arc(this.x,this.y,this.s,0,Math.PI*2);X.fillStyle=this.c;X.shadowColor=this.c;X.shadowBlur=this.s*3;X.fill();X.restore()}}
+let ps=[];for(let i=0;i<40;i++)ps.push(new Pt);
+function lp(a,b,t){const p=c=>{const n=parseInt(c.replace('#',''),16);return[(n>>16)&255,(n>>8)&255,n&255]};const[r1,g1,b1]=p(a),[r2,g2,b2]=p(b);return`rgb(${Math.round(r1+(r2-r1)*t)},${Math.round(g1+(g2-g1)*t)},${Math.round(b1+(b2-b1)*t)})`}
+function render(){
+  tm+=.016;X.clearRect(0,0,W,H);const s=SC[cS],ts=SC[tS];
+  if(cS!==tS){bl+=.018;if(bl>=1){cS=tS;bl=0}}const b=bl;
+  const g=X.createLinearGradient(0,0,0,H);for(let i=0;i<s.sky.length;i++)g.addColorStop(i/(s.sky.length-1),b>0?lp(s.sky[i],ts.sky[i],b):s.sky[i]);
+  X.fillStyle=g;X.fillRect(0,0,W,H);
+  X.save();X.globalAlpha=.2;X.beginPath();X.moveTo(0,H*.52);for(let x=0;x<=W;x+=25)X.lineTo(x,H*.52+Math.sin((x+tm*12)*.004)*60+Math.sin((x+tm*7)*.01)*30);X.lineTo(W,H);X.lineTo(0,H);X.fillStyle=b>0?lp(s.sky[1],ts.sky[1],b):s.sky[1];X.fill();X.restore();
+  X.save();X.globalAlpha=.35;X.beginPath();X.moveTo(0,H*.64);for(let x=0;x<=W;x+=18)X.lineTo(x,H*.64+Math.sin((x+tm*20)*.006)*38+Math.sin((x+tm*10)*.014)*20);X.lineTo(W,H);X.lineTo(0,H);X.fillStyle=b>0?lp(s.sky[0],ts.sky[0],b):s.sky[0];X.fill();X.restore();
+  X.fillStyle=b>0?lp(s.gd,ts.gd,b):s.gd;X.fillRect(0,H*.83,W,H*.17);
+  const ly=H*.79,lc=b>0?lp(s.ln,ts.ln,b):s.ln;
+  X.save();X.strokeStyle=s.gl;X.lineWidth=4;X.shadowColor=s.gl;X.shadowBlur=20;X.beginPath();X.moveTo(0,ly);for(let x=0;x<=W;x+=3)X.lineTo(x,ly+Math.sin(x*.007+tm*1.3)*2);X.stroke();X.restore();
+  X.save();X.strokeStyle=lc;X.lineWidth=1.2;X.shadowColor=lc;X.shadowBlur=6;X.beginPath();X.moveTo(0,ly);for(let x=0;x<=W;x+=3)X.lineTo(x,ly+Math.sin(x*.007+tm*1.3)*2);X.stroke();X.restore();
+  const px=((tm*65)%(W+200))-100;X.save();X.globalAlpha=.6;const pg=X.createRadialGradient(px,ly,0,px,ly,20);pg.addColorStop(0,lc);pg.addColorStop(1,'transparent');X.fillStyle=pg;X.fillRect(px-20,ly-20,40,40);X.restore();
+  const gx=W*.13,gy=ly+Math.sin(gx*.007+tm*1.3)*2;
+  X.save();X.globalAlpha=.4;const fg=X.createRadialGradient(gx,gy,0,gx,gy,14);fg.addColorStop(0,lc);fg.addColorStop(1,'transparent');X.fillStyle=fg;X.fillRect(gx-14,gy-14,28,28);X.restore();
+  X.save();X.fillStyle='#080808';X.beginPath();X.ellipse(gx,gy-18,4.5,14,0,0,Math.PI*2);X.fill();X.beginPath();X.arc(gx,gy-37,6.5,0,Math.PI*2);X.fill();X.beginPath();X.arc(gx,gy-39,8,Math.PI*.8,Math.PI*2.2);X.fill();X.lineWidth=2;X.strokeStyle='#080808';X.beginPath();X.moveTo(gx-3,gy-27);X.lineTo(gx-10,gy-15+Math.sin(tm*2)*2);X.stroke();X.beginPath();X.moveTo(gx+3,gy-27);X.lineTo(gx+10,gy-15-Math.sin(tm*2)*2);X.stroke();X.beginPath();X.moveTo(gx-2,gy-5);X.lineTo(gx-4,gy);X.stroke();X.beginPath();X.moveTo(gx+2,gy-5);X.lineTo(gx+4,gy);X.stroke();X.globalAlpha=.3;X.strokeStyle=lc;X.lineWidth=.7;X.beginPath();X.arc(gx+2,gy-37,6.5,-.4,.4);X.stroke();X.restore();
+  ps.forEach(p=>{p.u();p.w()});requestAnimationFrame(render);
+}
+render();
+function setScene(k){if(!SC[k]||k===tS)return;tS=k;bl=0;document.getElementById('sceneNm').textContent=SC[k].nm;setTimeout(()=>ps.forEach(p=>p.c=SC[k].pc[Math.floor(Math.random()*SC[k].pc.length)]),400)}
+
+// ═══════════════════════════════════
+// CLAUDE API
+// ═══════════════════════════════════
+// API connects through secure backend proxy with streaming + conversation memory
+let USE_API = true;
+let conversationHistory = [];
+let isAsking = false;
+document.getElementById('apiBadge').className = 'api-badge on';
+document.getElementById('apiBadge').textContent = 'AI connected';
+document.getElementById('apiBadge').onclick = null;
+
+function openModal() {}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function saveKey() { closeModal(); }
+
+async function callClaudeStream(userMsg, onChunk) {
+  conversationHistory.push({ role: 'user', content: userMsg });
+  let fullResponse = '';
+  try {
+    const resp = await fetch('/api/chat/stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: conversationHistory })
+    });
+    if (!resp.ok) throw new Error('API error');
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6);
+          if (data === '[DONE]') continue;
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.text) { fullResponse += parsed.text; onChunk(parsed.text, fullResponse); }
+          } catch {}
+        }
+      }
+    }
+    if (fullResponse) {
+      conversationHistory.push({ role: 'assistant', content: fullResponse });
+      if (conversationHistory.length > 20) conversationHistory = conversationHistory.slice(-20);
+      return fullResponse;
+    }
+    conversationHistory.pop();
+    return null;
+  } catch (e) {
+    if (fullResponse) {
+      conversationHistory.push({ role: 'assistant', content: fullResponse });
+      return fullResponse;
+    }
+    conversationHistory.pop();
+    console.warn('API fallback to local:', e);
+    return null;
+  }
+}
+
+// ═══════════════════════════════════
+// PATTERN MATCHING FALLBACK
+// ═══════════════════════════════════
+const KB=[
+{id:'who',m:[/who (are|r) (you|u)/i,/tell me about (yourself|you)/i,/introduce/i,/background/i,/your (background|story)/i,/describe yourself/i,/what do you do/i,/what'?s your deal/i],sc:'origin',
+r:[
+"I don't walk away from things. I dive headfirst, build something real, then ask what's next.\n\nSeven years deploying submarine fiber optic cables across East Africa. **$102 million**, four countries. Led Africa's first deep-lake bathymetric survey at 1,400 meters. Then Boston. Panicked through exams. Built a VR network analyzer. Dove into AI and transformers, built PANDERMA, won the MIT Africa Innovate Hackathon. Then realized: wait. Always check the infrastructure. All these technologies are running on SOMETHING. The photonics. The interconnects. The thermal management at nanoscale.\n\nI didn't walk away from AI. I went **deeper**. To the substrate that makes it all physically possible.\n\nNow I'm adding layers. Photonics course with Farhat. Underwater laser communication research. Sonoluminescence. Dome data centers inspired by 400 BC Persian ice houses. It all connects.",
+"Short version? I'm a Kikuyu woman named Wanjiru, one of the nine daughters of Gikuyu and Mumbi in our creation story. I write poems when the world gets heavy. I deploy submarine cables when the world needs connecting. I build prototypes when I need to understand something.\n\n<div class='verse'>Battered, shattered and torn I may be<br>but this I promise,<br>when the storm passes, I will rise.</div>\n\nFive months ago I arrived in Boston terrified. Now I'm building at the intersection of VR, AI, photonics, acoustics, and underwater optics. I keep adding layers until I'm the only person who understands all of them. The chaos is the chrysalis."
+]},
+{id:'infra',m:[/submarine/i,/cable/i,/deploy/i,/africa.*(work|career|year)/i,/fiber.*(optic|deploy)/i,/102/i,/infrastructure/i,/dwdm|sonet|otn/i,/link.?budget/i,/optical.*(transport|network|amplif)/i,/beach/i,/transponder/i,/field/i],sc:'origin',
+r:[
+"Seven years. **$102 million**. Four countries.\n\nI wasn't behind a desk. Beach landing stations where salt water meets fiber. Government ministers who needed convincing why optical amplifiers every 80km matter. Customs officers who decided if your transponder arrives this month or next. DRC border crossings where geopolitics meets photonics.\n\nDWDM systems carrying terabits across borders. Link budgets for multi-span systems. I knew which transponders would survive and which wouldn't. I knew what happens when the nearest replacement part is **5,000 kilometers away.**\n\n<div class='verse'>In the vast expanse of Lake Tanganyika,<br>our boat ventured into the unknown,<br>surrounded by a dynamic ecosystem that teemed with life.</div>\n\nThat's my LinkedIn writing about the lake survey. I process things through words. Always have.",
+"Network Operations Engineer → Program Manager → Senior Program Manager. That's the resume version.\n\nThe real version: I started monitoring SONET/SDH rings, learning how optical networks actually **fail**. Not in textbooks, in the field. Salt water corrosion. Political border closures. Equipment stuck in customs.\n\nThen I was managing the whole thing. Coordinating with DEG, FinnFund, EIB for financing. Translating technical specs into documents that bankers understand.\n\nI know what breaks. I know what customers actually need vs what they ask for. I know the difference between 'works in lab' and 'works at 1,400 meters underwater.'"
+]},
+{id:'lake',m:[/tanganyika/i,/lake/i,/bathymetric/i,/survey/i,/1[,.]?400/i,/deep.?lake/i,/sonar/i,/first.*(africa|survey|deep)/i,/problem.?solv/i,/challenge.*(faced|overcome|example)/i,/example.*(problem|challenge|difficult)/i,/tell me about a time/i,/give.*(example|me a time)/i],sc:'deep',
+r:[
+"Lake Tanganyika. **1,400 meters deep.** Nobody had surveyed at that depth before in Africa.\n\nThe waters surged with a ferocity that sent shivers down our spines. Our Captain's voice pierced through the cacophony — *\"Inhale deeply, exhale slowly.\"* And in each breath I found a moment of clarity amidst the turmoil.\n\nI designed the methodology myself: sonar acquisition at 7 knots, satellite uplink for real-time analysis, Python scripts optimizing routes based on slope stability and sediment chemistry. No playbook. No precedent. Just depth, data, and the determination to map what nobody had mapped.\n\nThe lesson from that lake that stays with me: the smallest components can have a profound impact. Just like a single bolt holding a grand structure — the tiniest details determine the outcome. That's why I'm going to device scale. The **nanoscale** is where the infrastructure I deployed either works or doesn't.",
+"People ask 'tell me about a challenge' and I say: I led Africa's first deep-lake bathymetric survey.\n\n1,400 meters of black water above the lakebed. No existing data. No one had done this. It wasn't just engineering — it was optical survey + satellite uplink + geopolitics + sediment chemistry + slope stability. **Everything connects** when you're deploying at that scale.\n\nI returned three years later and the lake tested my mettle again. Each ripple upon the surface conceals a story.\n\nThat's my pattern: when there's no solution, I build one. When there's no map, I make one. I'm comfortable in the unknown because **I've lived there.**"
+]},
+{id:'mzq',m:[/mach|zehnder|mzi/i,/hyperlight/i,/where does the energy/i,/petr|horvath/i,/complementary/i,/interview.*(question|change)/i],sc:'wound',
+r:[
+"HyperLight wasn't rejection. It was **clarity**.\n\nPhotonic IC Engineer interview. Going well. Then: *\"Where does the energy go in a Mach-Zehnder modulator when light is switched off?\"* I didn't know. Figured it out that night, **complementary port**, conservation of energy.\n\nBut the real clarity? I'd deployed optical networks for seven years but didn't understand the devices. I was building ON TOP of photonics without understanding photonics itself. Petr Horvath said: take Farhat's course. So I walked into Farhat's office and talked my way in.\n\nThat's the gap I'm closing now. Not with shame. With building.",
+"People ask about HyperLight like it was THE moment. It was **a** moment. One of many.\n\nThe real story is the pattern: I keep diving into rooms I'm not supposed to be in. Infrastructure boardrooms in my 20s. A lake nobody had surveyed. An AI hackathon. A photonics course I wasn't qualified for.\n\nHyperLight gave me clarity, not rejection. I'd been building on top of photonics for seven years without understanding it. Now I understand the gap and I'm closing it. One step at a time. Scared but doable.\n\n<div class='verse'>I had to claw my flesh and gnaw it to the bone<br>to find the root of my pain.<br>It was my heart, that I needed to remake.</div>"
+]},
+{id:'transform',m:[/transform/i,/5.?month/i,/first.?semester/i,/october/i,/november/i,/becoming/i,/chrysalis/i,/journey.*(so far|lately|recent)/i,/what.*(been|happening|going on)/i,/tell me about.*(time|semester|year)/i,/the panic/i,/how.*(start|begin)/i],sc:'build',
+r:[
+"Five months. That's how long it took to become someone new.\n\n**October**: Arrived terrified. First networking exams. DHCP, OSPF, subnetting. 35% on midterms. Built understanding by doing problems until my fingers knew the answers before my brain did. Passed. Didn't celebrate. \"What's next?\"\n\n**November**: GlitchWitch. VR network analyzer. Quest 3 headsets. 15,000+ packets in 3D. Dove into emerging tech, VR and AR, the new frontier. Didn't just use VR. Built TOOLS for VR networks.\n\n**December to February**: Dove into AI and machine learning by BUILDING. PANDERMA, multi-agent transformer system. 85% accuracy. Won MIT Africa Innovate Hackathon. Still using AI. Still in it. But realized: always check the infrastructure. All these technologies are running on something.\n\n**February**: Walked into Farhat's office. Talked my way into a photonics course.\n\n**March**: The chaos day. 10 internships, dome data centers, yakhchals, panic, then 6 hours of execution.\n\nI don't walk away from anything. I keep adding layers.",
+"You want the clean version? There isn't one.\n\nI went from panic student to VR builder to AI developer to photonics researcher in five months. Not because I'm unfocused, because I'm **synthesizing**. Each dive added a layer.\n\nExams taught me I can survive anything through will. GlitchWitch taught me I think laterally. PANDERMA and the MIT hackathon taught me I can build anything. Farhat's course taught me to ask for what I need.\n\nAnd March? March taught me the chaos IS the process. Diverge wildly, then capitalize strategically. The divergence isn't distraction. It's reconnaissance. Scout the territory, THEN pick the executable path.\n\n<div class='verse'>Like raging waves high-rise,<br>ferocious as the sun's light,<br>I promise to fight,<br>and for now I think that will suffice.</div>"
+]},
+{id:'chaos',m:[/chaos.?day/i,/10 internship/i,/dome/i,/yakh/i,/persian/i,/ice house/i,/all over the place/i,/scatter/i,/too many/i,/focus/i,/data center.*(design|cool|thermal)/i,/6 hour/i,/one day/i],sc:'build',
+r:[
+"One day in March tells you everything about me.\n\n**Morning**: Applied to 10 photonics internships. Cover letters, portfolios, the whole thing.\n**Afternoon**: Got excited about data center thermal design. Started sketching **dome architectures** — because why are data centers rectangles when domes distribute heat better? Discovered **yakhchāls** — 400 BC Persian ice houses that kept ice frozen in desert heat. Started connecting ancient cooling to modern photonic thermal management.\n**Evening**: Panicked. *Am I all over the place? Am I unfocused?*\n**Night**: Sat down. Wrote a complete data center thermal analysis in **6 hours**.\n\nFrom chaos to clarity. That's me. I don't filter the curiosity — I let it run, then I execute when the moment demands it.",
+"Everyone sees the chaos and thinks I'm scattered. I get it.\n\nBut look at the output. Yakhchāls → modern thermal management. That's not random — that's **pattern recognition** working at full speed. I connect ancient Persian engineering to photonic chip cooling because I think across scales and across time.\n\nThe panic is real. I sat there thinking *what am I even doing?* Then I opened my laptop and produced six hours of my best technical work.\n\nThat's who you'd be hiring. Someone whose creative chaos resolves into execution. Every single time."
+]},
+{id:'sono',m:[/sonoluminescence/i,/underwater.*(laser|optical|light|comm)/i,/bubble/i,/spad/i,/bessel/i,/whisper/i,/through.?line/i,/thesis/i,/long.?term.*(research|direction)/i,/novel/i],sc:'deep',
+r:[
+"Sonoluminescence. Bubble collapse creating light. Sound becoming photons.\n\nCombine that with underwater optical communication, SPAD-based photon detection, Bessel beams, and you get something nobody's put together before.\n\nHere's why it connects EVERYTHING: my submarine cable background is underwater infrastructure. Photonic devices are light sources and detectors. Acoustic physics is bubble collapse, sound and light interacting. The 'whisper in water' questions I've been asking since November. Lake Tanganyika's deep environments where I've actually worked.\n\nInfrastructure to devices to novel application. That's not three separate interests. That's one through-line I'm building toward. Maybe it becomes the thesis. Scared but doable.",
+"The through-line nobody sees yet:\n\nSubmarine cables (underwater infrastructure) → Photonic devices (light sources, detectors) → Underwater laser communication via sonoluminescence.\n\nBubble collapse creating light. SPAD photon detection in deep water. Bessel beams for long-range underwater optical links.\n\nMaybe it's underwater optical networks using sonoluminescence. Maybe photonic data centers cooled like Persian ice houses. Maybe acoustic-enhanced thermal management for silicon photonics. Maybe all three.\n\nI don't know yet. I'm building to find out. That's how I learn. Dive headfirst, come back and capitalize. One step at a time."
+]},
+{id:'cross',m:[/why.*(come|move|leave|came|left)/i,/cross/i,/kenya.*(to|→).*/i,/boston/i,/northeastern/i,/master/i,/transition/i,/leap/i,/leaving/i],sc:'cross',
+r:[
+"Leaving Kenya wasn't a decision. It was a controlled fall.\n\nEverything I knew was there. Red earth. Green hills. People who knew my name before I knew theirs. My parents, they're in Lawrence, Kansas now, building a cleaning and elder care business. I help them from across a different kind of distance.\n\nOn the other side: Boston. Snow instead of rain. Nobody knows you. Nobody cares about your $102M projects. You're a first-year master's student. **Start over.**\n\nI was terrified. But I was more terrified of staying. Of never knowing what's inside the chip.\n\n*I wake up. I panic. But I remember God is in control.* The line held. Barely.",
+"Most people see it as Kenya to Boston. Geographic move.\n\nIt's actually: **Manager to Researcher. Infrastructure to Device. Certainty to Unknown. Identity to Becoming.**\n\nEach transition, I don't just add skills. I BECOME someone different. And I do it by building things at the boundary that require BOTH worlds to exist.\n\nThe move itself, that step, was the hardest part. Not Boston. Not the cold. The **step**. When you leave everything familiar and the thin line stretches across an ocean and you just... walk."
+]},
+{id:'nano',m:[/why not ai/i,/everyone.*(ai|ml|machine)/i,/ai.*(instead|why not|rather)/i,/nano/i,/basics/i,/hardware/i,/why photonics/i,/why.*(this field|device|chip)/i,/why.*(role|company|here|us|apply)/i,/why silicon/i,/substrate/i,/bottleneck/i,/what drives/i,/what motivat/i,/why this/i,/lightmatter/i,/passage/i],sc:'nano',
+r:[
+"I didn't leave AI. I'm still IN it. PANDERMA is a transformer-based multi-agent AI system. I won the MIT Africa Innovate Hackathon building an AI voice tutor. I USE AI every day.\n\nBut here's what I realized between building VR tools and AI systems: **always check the infrastructure.**\n\nAll these technologies, VR, AR, AI, machine learning, they're running on SOMETHING. They need bandwidth, compute, cooling, power. Everyone's building at the application layer. Nobody's looking at the **substrate**.\n\nPhotonic interconnects. Silicon photonics. Thermal management at chip scale. **It's in the basics, nanoscale.** I didn't walk away from AI. I went DEEPER. To the infrastructure layer that enables all of it.",
+"Here's what nobody's talking about while they chase LLMs:\n\nAI runs on **chips**. Chips need photonic interconnects, thermal management, power infrastructure. That's the basics everyone's ignoring.\n\nLightmatter's Passage M1000: photonic interconnects at data center scale. Solving the bandwidth bottleneck that limits AI. That's the intersection I live in.\n\nI deployed optical networks. Now I want to design the photonic chips that enable them.\nI built AI systems. Now I want to build the hardware that makes AI physically possible.\nI managed optical transport at km scale. Now I want to innovate at μm scale.\n\nI didn't go away from AI. I went to AI **infrastructure** at the device level. Adding layers, not walking away from anything."
+]},
+{id:'offer',m:[/what.*(bring|offer|contribut)/i,/why.*(hire|pick|choose|want|should)/i,/what.*(unique|different|special|makes you)/i,/what.*(value|add)/i,/what would you/i,/take a chance/i,/invest/i,/why you/i,/convince/i,/sell/i,/pitch/i,/what can you do/i,/your team/i],sc:'vision',
+r:[
+"Not skills — **perspectives.**\n\n**1.** I've deployed the systems you're designing devices for. I know what breaks in the field. I know the difference between 'works in lab' and 'works at 1,400 meters underwater.'\n\n**2.** When you're testing a photonic chip, I'm thinking: how does this perform when there are **10,000** of them generating heat in a rack? I bring deployment reality to device optimization.\n\n**3.** I automate everything I touch. Same test twice? I'm writing Python to do it 100 times.\n\n**4.** I learn faster than I should. Show me once, I build a rough version. Show me twice, I optimize it.\n\n**5.** I ask the questions nobody asks. *'Why are data centers rectangles when domes cool better? Can we use 400 BC Persian ice storage for modern thermal management?'* I make the team think differently.\n\n**6.** I've solved problems with no playbook. Nobody had mapped Lake Tanganyika at that depth. I figured it out. I'm comfortable in the unknown.",
+"Because I bring something your PhD candidates don't: **seven years deploying optical systems in the real world.**\n\nI know what 'good enough' means at scale. I know which optimizations matter and which are academic. I know how to make things work when the nearest replacement part is 5,000 kilometers away.\n\nYou're not taking a chance — you're getting infrastructure-scale expertise at a discount while I learn device-scale methods. Give me two weeks and I'll be productive. Give me two months and I'll be building tools that make your team faster.\n\nYou're not training a specialist. You're training someone who thinks **systems**. Someone who can test a microring modulator while asking *'what happens when there are 10,000 of these and the power goes out?'*"
+]},
+{id:'build',m:[/build/i,/project/i,/glitchwitch/i,/panderma/i,/acoustic/i,/thermal/i,/chimney/i,/dome/i,/working on/i,/interest/i,/research/i,/what.*doing/i,/current/i,/right now/i,/nowadays/i,/what are you/i],sc:'build',
+r:[
+"I don't read to understand. I **build** to understand. My hands teach my brain.\n\n**GlitchWitch**: VR network analyzer. Quest 3. 15,000+ packets in 3D. Dove into VR/AR because that's the emerging frontier.\n\n**PANDERMA**: Multi-agent AI using transformers. 85% accuracy medical diagnosis. Presented at IMPACT Symposium. Won **MIT Africa Innovate Hackathon** with an AI voice tutor, 48 hours, Stack AI sponsor prize.\n\n**Acoustic Thermal Chimney**: Sound waves enhancing heat transfer in photonic systems.\n\n**Underwater laser communication**: Sonoluminescence (bubble collapse creating light) + SPAD photon detection + Bessel beams. This connects my submarine cable background to photonic devices to acoustic physics.\n\n**Dome data centers**: Yakhchal-inspired passive cooling. Why are data centers rectangles when domes distribute heat better?\n\nTaking Farhat's Photonic Devices course Spring 2026. Building toward a prototype and thesis. One step at a time. Scared but doable.",
+"My learning style: dive headfirst, build something, come back and capitalize.\n\nStart with: *'how do data centers cool?'* then spiral into history (yakhchals, cooling towers, nuclear reactors), jump to physics (acoustic streaming, thermoacoustics, radiative cooling), connect to now (photonic chip thermal management), zoom out (dome data centers), get scared (too big), zoom back in (*just apply to Lightmatter today*).\n\nIt looks chaotic. It's **reconnaissance**. I scout the entire territory, THEN pick the executable path.\n\nThe through-line: submarine cables (underwater infrastructure) to photonic devices (light sources, detectors) to underwater laser communication via sonoluminescence. That's not a detour. That's the whole story connecting.\n\n<div class='verse'>Like raging waves high-rise,<br>ferocious as the sun's light,<br>I promise to fight,<br>and for now I think that will suffice.</div>"
+]},
+{id:'weak',m:[/weakness/i,/don'?t (know|have)/i,/gap/i,/lack/i,/missing/i,/phd/i,/lab experience/i,/what.*(hard|difficult|struggle)/i,/limit/i,/short/i,/improve/i,/not qualif/i,/under.?qualif/i],sc:'wound',
+r:[
+"I don't have traditional photonics lab experience. I haven't tested a microring modulator. I haven't run an optical spectrum analyzer on a PIC.\n\nBut I have **seven years characterizing optical systems at infrastructure scale**. I know how to measure, test, validate, troubleshoot optical links. I just haven't done it at chip scale yet.\n\nDevice Physics: 40/100. Lab Technique: 35/100. I'm not pretending otherwise. I'm building these deliberately through coursework and hands-on projects.\n\nAnd here's what I know: most people with my track record wouldn't admit gaps. Most people with my gaps wouldn't attempt what I attempt. I do both. That combination is **rare**.",
+"The gap between my vision and my current capability. That's what's hard.\n\nI can see clearly what I want to build. But I don't have all the skills yet to execute at the level I'm imagining. That's uncomfortable.\n\nBut discomfort is where I've always done my best work. The lake was uncomfortable. DRC border crossings were uncomfortable. Leaving Kenya was uncomfortable.\n\n<div class='verse'>I am battered, beaten, defeated.<br>I am bruised, hurt, disheartened.<br>But hey if you ask me, love, how have you been?<br>I will smile generously.</div>\n\nThat's from my poetry. I hold the weight and keep walking. That's the thin line."
+]},
+{id:'fear',m:[/scar/i,/fear/i,/afraid/i,/imposter/i,/doubt/i,/worry/i,/anxious/i,/panic/i,/wrong room/i,/belong/i,/fake/i,/pretend/i,/what.*(keeps|keep).*up/i,/vulnerable/i,/honest/i],sc:'fear',
+r:[
+"I am scared.\n\nDirect. No elaboration needed. But since you asked.\n\nThe fear isn't failure. The fear is **being in the wrong room entirely.** What if I'm an infrastructure person pretending to be a device person? What if all this divergence, VR, AI, photonics, acoustics, is just distraction?\n\nI KNOW I can deploy infrastructure. Proven. I KNOW I can build AI systems. Proven. But device-scale physics? Silicon photonics? What if I don't belong there?\n\nBut then I remember: I'm not in the wrong room. I'm in **the room between rooms**. Where infrastructure meets devices meets AI meets acoustics. Nobody else is there. That's not confusion. That's the most valuable position in photonics and nobody knows it yet.",
+"The contradiction at my core:\n\nI've done **impossible things** — first deep-lake survey, connected four countries, managed nine figures. But I don't feel like I've arrived.\n\nConfident AND scared. Visionary AND practical. Independent AND needing mentorship. I carry both simultaneously.\n\n*I wake up. I panic about my coop. But I remember God is in control.*\n\nThe people who rejected me couldn't place me. Too infrastructure for devices. Too device-curious for infrastructure. The thin line between worlds. That's where I live. That's where the breakthroughs happen."
+]},
+{id:'faith',m:[/faith/i,/god/i,/pray/i,/believe/i,/spirit/i,/relig/i,/trust/i,/hope/i,/how.*(cope|handle|deal|manage)/i],sc:'faith',
+r:[
+"**'God is in control'** isn't comfort. It's strategy.\n\nWhen you're attempting things beyond your current capability, transitioning without PhD experience, applying to roles you're 'not qualified for,' imagining architectures that don't exist, you NEED something bigger than yourself.\n\nGod's got this = I can take the next step even when I can't see the staircase.\n\nManaging $102M in my 20s. Deploying cable across DRC. Leaving Kenya. Diving into AI. Walking into Farhat's office. All too scary. Faith is why I did them anyway.\n\n<div class='verse'>When your screams pass a certain pitch<br>that is beyond human ears, now a twitch<br>then exhausted your lungs collapse...<br>Instead I sit, and join him in his humming hymn<br>of silence.</div>\n\nThat's from my poem about the silent old man I met as a child. Faith is how I hold the silence and keep moving."
+]},
+{id:'vision',m:[/vision/i,/future/i,/5 years/i,/goal/i,/dream/i,/where.*(see|going|headed|want|do)/i,/long.?term/i,/end.?game/i,/plan/i,/next/i,/where.*this.*going/i,/fold/i,/all.*going/i,/what.*(becoming|become)/i],sc:'vision',
+r:[
+"I'm studying how to be the person who stands at the intersection of **all of it**.\n\nNetwork deployment. Device physics. Thermal management. System architecture. Nobody's training for that job because the job doesn't exist yet. I'm building it by becoming the person.\n\nFive months ago I was a panic student. Now I'm designing dome data centers inspired by Persian ice houses, building VR network analyzers, and taking graduate photonics courses.\n\nThe confusion IS the emergence. Every lateral jump adds a lens. Every panic resolves into execution. I'm not scattered — I'm **synthesizing** something that will make sense when it's done.",
+"Everything connects. Here's how it folds:\n\n2018: Learned how optical networks **fail** (field troubleshooting)\n2019-2025: Learned how they **scale** ($102M, multi-country)\n2024: Proved I can **innovate** with no playbook (Lake Tanganyika)\n2025 Oct: Arrived terrified. Built understanding through doing. Passed.\n2025 Nov: Dove into VR/AR. Built GlitchWitch.\n2025 Dec-Feb: Dove into AI. Built PANDERMA. Won MIT hackathon. Realized: always check the infrastructure.\n2026 Feb: Walked into Farhat's office. Got into photonics.\n2026 Mar: The chaos day. Diverge wildly, then execute.\n\nI don't walk away from anything. I keep adding layers. VR + AI + photonics + acoustics + underwater optics. The through-line: infrastructure to devices to novel application."
+]},
+{id:'hi',m:[/^(hi|hello|hey|sup|yo|greetings|howdy|what'?s ?up)/i],sc:'origin',
+r:["Hey. I'm Grace.\n\nI don't walk away from things. I dive headfirst. Seven years of submarine cables, then Boston, then VR, AI, photonics, acoustics, underwater optics, dome data centers, Persian ice houses. I keep adding layers.\n\nAsk me anything. The transformation. The chaos day. What I'm building with sonoluminescence. What scares me. Why I went deeper instead of following trends.\n\nI'll keep it real. That's the only way I know."]}
+];
+
+const FB=["hmm I mihght not have a perfect answer for that. but try asking: who am I, what do I offer a team, what scares me, why I went deeper than AI, what I'm building, or about sonoluminescence. I'll keep it real.","wait that's interesting. I don't have it mapped perfectly but ask about the submarine cables, the transformation, the chaos day, what I'd bring to your team. That's where the real stuff is.","I don't have a clean answer. But I'm an open book. Infrastructure years, the dive into AI, the dive into photonics, underwater laser comms, what keeps me up at night. Ask and I'll tell you everything."];
+const hist={};
+function local(q){
+  const l=q.toLowerCase().trim();
+  for(const e of KB){if(e.m.some(p=>p.test(l))){if(!hist[e.id])hist[e.id]=0;const i=hist[e.id]%e.r.length;hist[e.id]++;if(e.sc)setScene(e.sc);return e.r[i]}}
+  return FB[Math.floor(Math.random()*FB.length)];
+}
+
+// ═══════════════════════════════════
+// CHAT (streaming + Easter eggs + variable typing)
+// ═══════════════════════════════════
+const msE=document.getElementById('ms');
+function fmt(t){return t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>')}
+function addM(t,tp){const d=document.createElement('div');d.className=`m ${tp==='grace'?'g':'u'}`;d.innerHTML=`<div class="mw">${tp==='grace'?'Grace':'You'}</div><div class="mb">${fmt(t)}</div>`;msE.appendChild(d);msE.scrollTop=msE.scrollHeight}
+function shTp(){const d=document.createElement('div');d.className='m g';d.id='tp2';d.innerHTML=`<div class="mw">Grace</div><div class="tp"><span></span><span></span><span></span></div>`;msE.appendChild(d);msE.scrollTop=msE.scrollHeight;document.getElementById('av').classList.add('speaking')}
+function rmTp(){const e=document.getElementById('tp2');if(e)e.remove();document.getElementById('av').classList.remove('speaking')}
+
+function detectScene(r){
+  r=r.toLowerCase();
+  if(/sonoluminescence|bubble.*light|underwater.*laser|spad|bessel/i.test(r))setScene('deep');
+  else if(/tanganyika|1,?400|survey|lake|sonar/i.test(r))setScene('deep');
+  else if(/mach.?zehnder|hyperlight|complementary/i.test(r))setScene('wound');
+  else if(/kenya|africa|kikuyu|red earth|nairobi/i.test(r))setScene('origin');
+  else if(/boston|northeastern|crossing|leave|left|snow/i.test(r))setScene('cross');
+  else if(/\bai\b|algorithm|hardware|nanoscale|bottleneck|substrate/i.test(r))setScene('nano');
+  else if(/chaos|chrysalis|scatter|dome|yakh|persian|6 hours/i.test(r))setScene('chaos');
+  else if(/transform|becoming|semester|october|november|five months/i.test(r))setScene('chaos');
+  else if(/build|glitchwitch|panderma|acoustic|thermal/i.test(r))setScene('build');
+  else if(/god|faith|pray|control/i.test(r))setScene('faith');
+  else if(/scar|fear|imposter|wrong room|doubt/i.test(r))setScene('fear');
+  else if(/vision|future|bridge|synthesiz|fold/i.test(r))setScene('vision');
+}
+
+// Easter egg: rapid scene cascade
+function triggerThinLineEffect(){
+  const scenes=['origin','deep','wound','cross','nano','build','faith','fear','chaos','vision'];
+  let i=0;const flash=setInterval(()=>{if(i>=scenes.length){clearInterval(flash);setScene('vision');return}setScene(scenes[i]);i++},350);
+}
+
+async function ask(text){
+  if(!text.trim()||isAsking)return;
+  isAsking=true;
+  addM(text,'user');
+  document.getElementById('inp').value='';
+  const lower=text.toLowerCase().trim();
+
+  // ── Easter Eggs ──
+  if(/^rugano$/i.test(lower)){
+    setScene('wound');shTp();
+    await new Promise(r=>setTimeout(r,800));rmTp();
+    addM("<div class='verse'>I am battered, beaten, defeated.<br>I am bruised, hurt, disheartened.<br>But hey if you ask me, love, how have you been?<br>I will smile generously,<br>wearing a mask entirely.</div>\n\n<div class='verse'>Like raging waves high-rise,<br>ferocious as the sun's light,<br>I promise to fight,<br>and for now I think that will suffice.</div>\n\n<div class='verse'>When your wails go unheard<br>and all continues an assuming world,<br>instead I sit next to him<br>and join him in his humming hymn<br>of silence.</div>\n\n*Rugano. My pen name. My other thin line.*",'grace');
+    isAsking=false;return;
+  }
+  if(/show me the thin line/i.test(lower)){
+    triggerThinLineEffect();shTp();
+    await new Promise(r=>setTimeout(r,600));rmTp();
+    addM("Watch the line.\n\nThat's where I walk. Between infrastructure and devices. Between AI and photonics. Between who I was and who I'm becoming.\n\nThe thin line isn't a tightrope. It's a **bridge** I'm building as I cross it.",'grace');
+    isAsking=false;return;
+  }
+  if(/^(ngai|kirinyaga|gikuyu|mumbi|anjiru)$/i.test(lower)){
+    setScene('origin');shTp();
+    await new Promise(r=>setTimeout(r,700));rmTp();
+    addM("That word carries generations.\n\nNgai gave Gikuyu the land from atop Kirinyaga. Nine daughters became nine clans. I am Wanjiru, of the Anjiru clan. The story of creation isn't mythology to me. It's **systems thinking** passed down through oral tradition.\n\nEvery cable I deploy, every algorithm I build, every question about infrastructure underneath everything, it's the same pattern. Connection. Interdependence. The understanding that nothing exists alone.\n\n<div class='verse'>The land was given, not taken,<br>and in that gift was a debt,<br>a promise to tend what was entrusted.</div>",'grace');
+    isAsking=false;return;
+  }
+
+  // ── Streaming API with fallback ──
+  shTp();
+  let response=null;
+  if(USE_API){
+    let streamDiv=null,firstChunk=true;
+    response=await callClaudeStream(text,(chunk,full)=>{
+      if(firstChunk){
+        rmTp();
+        streamDiv=document.createElement('div');
+        streamDiv.className='m g';
+        streamDiv.innerHTML='<div class="mw">Grace</div><div class="mb"></div>';
+        msE.appendChild(streamDiv);
+        firstChunk=false;
+        document.getElementById('av').classList.add('speaking');
+      }
+      streamDiv.querySelector('.mb').innerHTML=fmt(full);
+      msE.scrollTop=msE.scrollHeight;
+    });
+    document.getElementById('av').classList.remove('speaking');
+    if(response){detectScene(response);isAsking=false;return}
+    if(!firstChunk){isAsking=false;return} // partial response displayed
+  }
+
+  // Fallback to local KB with variable typing delay
+  response=local(text);
+  const delay=Math.min(600+response.length*1.5+Math.random()*400,2500);
+  await new Promise(r=>setTimeout(r,delay));
+  rmTp();
+  addM(response,'grace');
+  isAsking=false;
+}
+
+document.getElementById('inp').addEventListener('keydown',e=>{if(e.key==='Enter')ask(e.target.value)});
+document.getElementById('snd').addEventListener('click',()=>ask(document.getElementById('inp').value));
+
+// Welcome
+setTimeout(()=>addM("I don't walk away from things. I dive headfirst, build something real, then ask what's next.\n\nSeven years of submarine cables across Africa. Then Boston. Exams I almost failed. VR tools I built from scratch. AI systems and a hackathon I won. Then the realization: always check the infrastructure. Everyone's building at the application layer. Nobody's looking at what makes it physically possible.\n\nNow I'm adding layers. Photonics. Acoustics. Underwater laser communication. Dome data centers inspired by 400 BC Persian ice houses. It all connects.\n\n**Ask me anything.** The chaos, the clarity, the fear, the faith. I'll keep it real.",'grace'),350);
+</script>
+</body>
+</html>

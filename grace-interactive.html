@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grace Mosota — From Ocean Floor to Photonic Chips</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a12;
+    --surface: #12121e;
+    --surface2: #1a1a2e;
+    --border: #2a2a40;
+    --text: #e0e0f0;
+    --text-dim: #8888aa;
+    --accent: #00d4ff;
+    --accent2: #7b61ff;
+    --accent3: #ff6b9d;
+    --glow: rgba(0, 212, 255, 0.15);
+    --glow2: rgba(123, 97, 255, 0.15);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* ── Particle Canvas ── */
+  #particles {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* ── Layout ── */
+  .app {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    grid-template-rows: auto 1fr;
+    min-height: 100vh;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* ── Header ── */
+  .header {
+    grid-column: 1 / -1;
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10, 10, 18, 0.8);
+    backdrop-filter: blur(20px);
+  }
+
+  .header-icon {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.3); }
+    50% { box-shadow: 0 0 40px rgba(0, 212, 255, 0.6); }
+  }
+
+  .header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .header p {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  .xp-bar-container {
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .xp-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 4px;
+  }
+
+  .xp-bar {
+    width: 200px;
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .xp-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 3px;
+    transition: width 0.8s ease;
+  }
+
+  /* ── Sidebar / Journey Map ── */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    padding: 20px;
+    overflow-y: auto;
+    background: rgba(18, 18, 30, 0.5);
+  }
+
+  .sidebar h2 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+
+  .journey-node {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 4px;
+    position: relative;
+  }
+
+  .journey-node:hover { background: var(--surface2); }
+  .journey-node.active { background: var(--glow); border: 1px solid rgba(0, 212, 255, 0.3); }
+  .journey-node.completed .node-dot { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .journey-node.locked { opacity: 0.4; cursor: not-allowed; }
+
+  .node-dot {
+    width: 12px; height: 12px;
+    min-width: 12px;
+    border-radius: 50%;
+    background: var(--border);
+    margin-top: 4px;
+    transition: all 0.3s ease;
+  }
+
+  .journey-node.active .node-dot {
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { box-shadow: 0 0 8px var(--accent); }
+    50% { box-shadow: 0 0 20px var(--accent); }
+  }
+
+  .node-line {
+    position: absolute;
+    left: 25px;
+    top: 36px;
+    width: 2px;
+    height: calc(100% - 12px);
+    background: var(--border);
+  }
+
+  .journey-node:last-child .node-line { display: none; }
+  .journey-node.completed .node-line { background: var(--accent); }
+
+  .node-info h3 {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+
+  .node-info p {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .node-badge {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--surface2);
+    color: var(--accent);
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-top: 4px;
+    display: inline-block;
+  }
+
+  .journey-node.completed .node-badge { background: rgba(0, 212, 255, 0.15); }
+
+  /* ── Achievements ── */
+  .achievements {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .achievements h2 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+
+  .achievement {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    font-size: 12px;
+    transition: all 0.3s ease;
+  }
+
+  .achievement.unlocked {
+    background: rgba(0, 212, 255, 0.08);
+  }
+
+  .achievement.locked {
+    opacity: 0.35;
+  }
+
+  .achievement-icon {
+    font-size: 18px;
+    width: 28px;
+    text-align: center;
+  }
+
+  .achievement-name { font-weight: 500; font-size: 12px; }
+  .achievement-desc { font-size: 10px; color: var(--text-dim); }
+
+  /* ── Main Content ── */
+  .main {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Info Panel (shown when clicking journey nodes) ── */
+  .info-panel {
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--border);
+    display: none;
+    animation: slideDown 0.3s ease;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .info-panel.visible { display: block; }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .info-panel h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--accent);
+  }
+
+  .info-panel .subtitle {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+
+  .info-panel .content {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  .info-panel .content p { margin-bottom: 12px; }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .stat-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+  }
+
+  .stat-card .value {
+    font-size: 22px;
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .stat-card .label {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  .skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .skill-tag {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 4px 10px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    transition: all 0.3s ease;
+  }
+
+  .skill-tag.highlight {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0, 212, 255, 0.08);
+  }
+
+  .close-panel {
+    float: right;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .close-panel:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Chat Area ── */
+  .chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .message {
+    max-width: 85%;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .message.agent { align-self: flex-start; }
+  .message.user { align-self: flex-end; }
+
+  .message-bubble {
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .message.agent .message-bubble {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 4px;
+  }
+
+  .message.user .message-bubble {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(123, 97, 255, 0.15));
+    border: 1px solid rgba(0, 212, 255, 0.25);
+    border-bottom-right-radius: 4px;
+  }
+
+  .message-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+    padding: 0 4px;
+  }
+
+  .message.agent .message-label { color: var(--accent); }
+
+  .typing-indicator {
+    display: flex;
+    gap: 4px;
+    padding: 14px 18px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    border-bottom-left-radius: 4px;
+    width: fit-content;
+  }
+
+  .typing-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    animation: typingBounce 1.4s ease-in-out infinite;
+  }
+
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes typingBounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-6px); opacity: 1; }
+  }
+
+  /* ── Quick Actions ── */
+  .quick-actions {
+    padding: 12px 32px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .quick-btn {
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .quick-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--glow);
+  }
+
+  /* ── Input ── */
+  .chat-input-area {
+    padding: 16px 32px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: rgba(10, 10, 18, 0.8);
+    backdrop-filter: blur(20px);
+  }
+
+  .chat-input {
+    flex: 1;
+    padding: 12px 18px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .chat-input:focus { border-color: var(--accent); }
+
+  .chat-input::placeholder { color: var(--text-dim); }
+
+  .send-btn {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .send-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+  /* ── Mobile ── */
+  @media (max-width: 768px) {
+    .app {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto 1fr;
+    }
+    .sidebar {
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+      max-height: 250px;
+      overflow-y: auto;
+    }
+    .header h1 { font-size: 16px; }
+    .xp-bar-container { display: none; }
+    .chat-messages { padding: 16px; }
+    .chat-input-area { padding: 12px 16px 16px; }
+    .quick-actions { padding: 8px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<div class="app">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-icon">🔬</div>
+    <div>
+      <h1>Grace Mosota — Interactive Portfolio</h1>
+      <p>Ask the agent anything about Grace's journey, skills & vision</p>
+    </div>
+    <div class="xp-bar-container">
+      <div class="xp-label">DISCOVERY: <span id="xp-text">0 / 7 topics explored</span></div>
+      <div class="xp-bar"><div class="xp-fill" id="xp-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>Journey Map</h2>
+    <div id="journey-list"></div>
+
+    <div class="achievements">
+      <h2>Achievements</h2>
+      <div id="achievements-list"></div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="info-panel" id="info-panel"></div>
+
+    <div class="chat-area">
+      <div class="chat-messages" id="chat-messages"></div>
+
+      <div class="quick-actions" id="quick-actions"></div>
+
+      <div class="chat-input-area">
+        <input type="text" class="chat-input" id="chat-input"
+          placeholder="Ask about Grace's experience, skills, projects..."
+          autocomplete="off" />
+        <button class="send-btn" id="send-btn" title="Send">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Particle Background ──
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+class Particle {
+  constructor() {
+    this.reset();
+  }
+  reset() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.size = Math.random() * 2 + 0.5;
+    this.speedX = (Math.random() - 0.5) * 0.3;
+    this.speedY = (Math.random() - 0.5) * 0.3;
+    this.opacity = Math.random() * 0.4 + 0.1;
+    this.hue = Math.random() > 0.5 ? 190 : 260;
+  }
+  update() {
+    this.x += this.speedX;
+    this.y += this.speedY;
+    if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = `hsla(${this.hue}, 80%, 70%, ${this.opacity})`;
+    ctx.fill();
+  }
+}
+
+for (let i = 0; i < 80; i++) particles.push(new Particle());
+
+function animateParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => { p.update(); p.draw(); });
+
+  // Draw connections
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 120) {
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.strokeStyle = `rgba(0, 212, 255, ${0.06 * (1 - dist / 120)})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+// ── Data ──
+const journeyData = [
+  {
+    id: 'submarine',
+    title: 'Submarine Cable Engineer',
+    subtitle: 'East & Central Africa — 7 years',
+    badge: '+$102M deployed',
+    content: `<p>Grace spent seven years deploying submarine fiber optic cables across East and Central Africa, managing over <strong>$102 million</strong> in infrastructure linking Kenya, Tanzania, DRC, and Burundi.</p>
+      <p>She wasn't a desk engineer — she was in the field, coordinating beach landing stations, negotiating with governments, and securing international financing for optical networks that connected entire countries.</p>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="value">$102M+</div><div class="label">Infrastructure Managed</div></div>
+        <div class="stat-card"><div class="value">4</div><div class="label">Countries Connected</div></div>
+        <div class="stat-card"><div class="value">7</div><div class="label">Years in the Field</div></div>
+        <div class="stat-card"><div class="value">5,000km+</div><div class="label">Cable Routes</div></div>
+      </div>
+      <div class="skill-tags">
+        <span class="skill-tag highlight">DWDM Systems</span>
+        <span class="skill-tag highlight">Link Budgets</span>
+        <span class="skill-tag">Submarine Cable</span>
+        <span class="skill-tag">Optical Amplifiers</span>
+        <span class="skill-tag">Government Relations</span>
+        <span class="skill-tag">International Finance</span>
+      </div>`
+  },
+  {
+    id: 'bathymetric',
+    title: 'Lake Tanganyika Survey',
+    subtitle: "Africa's first deep-lake bathymetric survey",
+    badge: '1,400m depth',
+    content: `<p>Grace led <strong>Africa's first deep-lake bathymetric survey</strong> at Lake Tanganyika, mapping the lake floor at <strong>1,400 meters depth</strong> — where no one had surveyed before.</p>
+      <p>This wasn't just engineering; it was exploration. Understanding the underwater terrain was critical for planning submarine cable routes across one of the world's deepest lakes.</p>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="value">1,400m</div><div class="label">Maximum Depth Mapped</div></div>
+        <div class="stat-card"><div class="value">First</div><div class="label">In Africa</div></div>
+      </div>
+      <div class="skill-tags">
+        <span class="skill-tag highlight">Bathymetric Mapping</span>
+        <span class="skill-tag">Survey Operations</span>
+        <span class="skill-tag">Route Planning</span>
+        <span class="skill-tag">Deep-Water Engineering</span>
+      </div>`
+  },
+  {
+    id: 'turning-point',
+    title: 'The Mach-Zehnder Moment',
+    subtitle: 'The question that changed everything',
+    badge: 'Inflection point',
+    content: `<p>During an interview at <strong>HyperLight Corporation</strong> for a Photonic Integrated Circuit Engineer role, Grace was asked:</p>
+      <blockquote style="border-left: 3px solid var(--accent); padding: 12px 16px; margin: 16px 0; background: rgba(0,212,255,0.05); border-radius: 0 8px 8px 0; font-style: italic;">
+        "Where does the energy go in a Mach-Zehnder modulator when light is switched off at the output?"
+      </blockquote>
+      <p>She didn't know the answer in the interview. She went home and figured it out — the light exits through a <strong>complementary port</strong>, conservation of energy — but that question never left her.</p>
+      <p>It crystallized something: she'd spent 7 years deploying networks but didn't understand the <em>devices</em> that made them possible. She wanted to go from "does the link work?" to "why does this waveguide behave this way?"</p>`
+  },
+  {
+    id: 'masters',
+    title: 'MS — Northeastern University',
+    subtitle: 'Telecommunication Networks',
+    badge: 'Current',
+    content: `<p>Grace came to Northeastern for her Master's in Telecommunication Networks, initially planning to go deeper into network architecture, 5G, or protocol optimization.</p>
+      <p>The HyperLight interview redirected her focus toward the <strong>device physics layer</strong> — understanding not just optical networks, but the photonic components that power them.</p>
+      <div class="skill-tags">
+        <span class="skill-tag highlight">Network Architecture</span>
+        <span class="skill-tag highlight">5G Systems</span>
+        <span class="skill-tag">Protocol Design</span>
+        <span class="skill-tag">Research Methods</span>
+      </div>`
+  },
+  {
+    id: 'glitchwitch',
+    title: 'GlitchWitch',
+    subtitle: 'VR Network Performance Analyzer',
+    badge: '15,000+ packets',
+    content: `<p><strong>GlitchWitch</strong> is a VR network performance analyzer Grace built to visualize packet flows in three dimensions.</p>
+      <p>She captured <strong>15,000+ packets</strong>, analyzed protocol distributions, and built automated parsing pipelines in Python. It taught her how to instrument systems she doesn't fully understand yet — a skill she plans to bring to photonics lab characterization.</p>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="value">15,000+</div><div class="label">Packets Captured</div></div>
+        <div class="stat-card"><div class="value">VR</div><div class="label">3D Visualization</div></div>
+        <div class="stat-card"><div class="value">Python</div><div class="label">Automation Stack</div></div>
+      </div>
+      <div class="skill-tags">
+        <span class="skill-tag highlight">Python</span>
+        <span class="skill-tag highlight">Data Pipelines</span>
+        <span class="skill-tag">VR Development</span>
+        <span class="skill-tag">Network Analysis</span>
+        <span class="skill-tag">Protocol Parsing</span>
+      </div>`
+  },
+  {
+    id: 'panderma',
+    title: 'PANDERMA',
+    subtitle: 'Multi-Agent AI Medical Diagnosis',
+    badge: '85% accuracy',
+    content: `<p><strong>PANDERMA</strong> is a multi-agent AI system for medical diagnosis that Grace co-developed. It achieved <strong>85% accuracy</strong> while closing equity gaps in healthcare.</p>
+      <p>It taught her how to design experiments, validate results systematically, and present research to people who know more than her — all skills that translate directly to photonics lab work.</p>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="value">85%</div><div class="label">Diagnostic Accuracy</div></div>
+        <div class="stat-card"><div class="value">Multi-Agent</div><div class="label">AI Architecture</div></div>
+      </div>
+      <div class="skill-tags">
+        <span class="skill-tag highlight">AI/ML Systems</span>
+        <span class="skill-tag highlight">Experiment Design</span>
+        <span class="skill-tag">Medical AI</span>
+        <span class="skill-tag">Equity in Tech</span>
+        <span class="skill-tag">Research Validation</span>
+      </div>`
+  },
+  {
+    id: 'thermal',
+    title: 'Acoustic Thermal Research',
+    subtitle: 'Sound-enhanced heat transfer',
+    badge: 'In progress',
+    content: `<p>Grace is exploring how <strong>sound waves can enhance heat transfer</strong> in high-density systems. She noticed that photonic chips have the same thermal management challenges as data centers — just at a different scale.</p>
+      <p>This research bridges her infrastructure experience (cooling data centers) with her photonics ambitions (thermal stability of microring modulators).</p>
+      <div class="skill-tags">
+        <span class="skill-tag highlight">Thermal Management</span>
+        <span class="skill-tag highlight">Cross-Scale Thinking</span>
+        <span class="skill-tag">Acoustics</span>
+        <span class="skill-tag">Heat Transfer</span>
+        <span class="skill-tag">Photonic Chip Cooling</span>
+      </div>`
+  }
+];
+
+const achievements = [
+  { icon: '🌊', name: 'Deep Diver', desc: 'Led Africa\'s first deep-lake bathymetric survey', unlockTopic: 'bathymetric' },
+  { icon: '🔗', name: 'Nation Linker', desc: 'Connected 4 countries with fiber optic cables', unlockTopic: 'submarine' },
+  { icon: '💡', name: 'Aha Moment', desc: 'Discovered the Mach-Zehnder complementary port', unlockTopic: 'turning-point' },
+  { icon: '👻', name: 'Glitch Hunter', desc: 'Captured 15,000+ packets in VR', unlockTopic: 'glitchwitch' },
+  { icon: '🧠', name: 'AI Builder', desc: '85% accuracy multi-agent medical AI', unlockTopic: 'panderma' },
+  { icon: '🔥', name: 'Heat Whisperer', desc: 'Exploring acoustic thermal enhancement', unlockTopic: 'thermal' },
+  { icon: '🎓', name: 'Scale Bridger', desc: 'Explored all journey topics', unlockTopic: '_all' },
+];
+
+// ── State ──
+let exploredTopics = new Set();
+let unlockedAchievements = new Set();
+let currentPanel = null;
+
+// ── Knowledge Base for Agent ──
+const knowledgeBase = {
+  greetings: {
+    patterns: [/^(hi|hello|hey|greetings|howdy|sup|yo)/i],
+    response: `Hey! I'm Grace's portfolio agent. I know everything about her journey from deploying submarine cables across Africa to pursuing photonic device physics.\n\nTry asking me about:\n• Her 7 years in submarine cable engineering\n• The Mach-Zehnder moment that changed her path\n• Her projects (GlitchWitch, PANDERMA)\n• What skills she brings vs. what she's learning\n• Why she'd be great for a photonics team\n\nOr just click one of the quick actions below!`
+  },
+  submarine: {
+    patterns: [/submarine|cable|fiber|deploy|africa|infrastructure|ocean|kenya|tanzania|drc|burundi|lake|field/i],
+    response: `Grace spent 7 years deploying submarine fiber optic cables across East and Central Africa. Here's what that actually means:\n\n**Scale:** Over $102 million in infrastructure connecting Kenya, Tanzania, DRC, and Burundi.\n\n**In the field:** She wasn't behind a desk. She managed beach landing stations (where submarine cables meet land), coordinated with governments, and secured international financing.\n\n**Technical depth:** DWDM systems carrying terabits across borders. Optical amplifiers every 80km. Link budgets for multi-span systems. She knew which transponders would survive and which wouldn't.\n\n**Highlight:** She led Africa's first deep-lake bathymetric survey at Lake Tanganyika — mapping the lake floor at 1,400 meters depth.\n\nClick "Submarine Cable Engineer" in the journey map to see the full stats.`,
+    unlocks: ['submarine', 'bathymetric']
+  },
+  machzehnder: {
+    patterns: [/mach.?zehnder|modulator|hyperlight|turning.?point|interview|energy|complementary|switch/i],
+    response: `This is the pivotal moment in Grace's story.\n\nDuring an interview at **HyperLight Corporation** for a Photonic IC Engineer role, she was asked:\n\n> "Where does the energy go in a Mach-Zehnder modulator when light is switched off at the output?"\n\nShe didn't know. She went home and figured it out: the light exits through a **complementary port** — conservation of energy.\n\nBut the question never left her. It made her realize: she'd spent 7 years deploying the networks but didn't understand the **devices** that made them possible.\n\nThat question is why she's pivoting from network-scale engineering to device-level photonics. She wants to go from "does the link work?" to "why does this waveguide behave this way?"`,
+    unlocks: ['turning-point']
+  },
+  skills: {
+    patterns: [/skill|bring|offer|strength|capable|qualification|experience|know|ability|competenc/i],
+    response: `Grace has a rare skill combination that bridges scales most engineers don't bridge:\n\n**What she brings NOW:**\n• Systems thinking at infrastructure scale ($102M projects)\n• Optical network engineering (DWDM, link budgets, OSNR, multi-span)\n• Python automation & data pipelines\n• Project/stakeholder management across governments\n• Field deployment experience (submarine cables, beach landings)\n• AI/ML system design (multi-agent architectures)\n• Cross-scale pattern recognition\n\n**What she's actively learning:**\n• Silicon photonics device physics\n• Waveguide design & behavior\n• Photonic device lab characterization\n• Microring modulator testing\n• Photon-carrier interactions in silicon\n\n**Her edge:** Most people who test a Mach-Zehnder interferometer have never deployed a submarine cable at 1,400m depth. She bridges infrastructure → device, network → component, theory → deployment.`,
+    unlocks: ['submarine']
+  },
+  projects: {
+    patterns: [/project|glitchwitch|panderma|build|built|portfolio|work|made|create/i],
+    response: `Grace builds to understand. Here are her key projects:\n\n**🔮 GlitchWitch** — VR Network Performance Analyzer\n• Captures 15,000+ packets and visualizes flows in 3D\n• Python automation pipelines for protocol parsing\n• Shows her ability to instrument systems she's still learning\n\n**🧠 PANDERMA** — Multi-Agent AI Medical Diagnosis\n• 85% diagnostic accuracy\n• Addresses equity gaps in healthcare\n• Taught her experiment design & research validation\n\n**🔥 Acoustic Thermal Research** (ongoing)\n• Exploring sound waves for heat transfer enhancement\n• Connects data center cooling experience → photonic chip thermal challenges\n• Same problem, different scale\n\nHer pattern: build things that don't exist yet → break them → understand them.`,
+    unlocks: ['glitchwitch', 'panderma', 'thermal']
+  },
+  whyhire: {
+    patterns: [/why.?(hire|choose|pick|want|should|team|fit|value|good|great)|what.?makes|stand.?out|unique|different|special/i],
+    response: `Here's why Grace is worth betting on:\n\n**1. She bridges scales nobody else bridges**\nShe's worked at the 5,000km submarine cable scale AND is learning the nanometer waveguide scale. That end-to-end perspective is rare in photonics.\n\n**2. She doesn't wait to be taught**\nGlitchWitch, PANDERMA, acoustic thermal research — she builds to learn. Put her near a problem and she'll start instrumenting it.\n\n**3. She knows what real deployment looks like**\nMost photonics researchers design for the lab. Grace has spent 7 years making things work in the Indian Ocean. She'll always ask "how does this scale?"\n\n**4. She's trading salary for mentorship**\nShe explicitly values learning over compensation at this stage. That's someone investing in a long-term career, not chasing a paycheck.\n\n**5. Systems thinking + device curiosity**\nShe'll ask "why is this microring thermally unstable?" AND "what happens when there are 10,000 of these in a rack?" — in the same conversation.`,
+    unlocks: ['submarine', 'turning-point']
+  },
+  photonics: {
+    patterns: [/photon|silicon|waveguide|microring|chip|device|physics|optic|light|laser|pho?ton/i],
+    response: `Grace's photonics journey is a deliberate scale shift:\n\n**What she already understands (network scale):**\n• DWDM — multiplexing wavelengths across thousands of km\n• OSNR (Optical Signal-to-Noise Ratio) management\n• Optical amplifier spacing & link budget calculations\n• Transponder selection for different route conditions\n\n**What she's pursuing (device scale):**\n• How a Mach-Zehnder modulator actually works at the physics level\n• Microring modulator testing & thermal stability\n• Waveguide behavior & design principles\n• Photon-carrier interactions in silicon\n• Photonic integrated circuit characterization\n\n**Her research connection:**\nHer acoustic thermal work directly connects to photonic chip cooling — microring resonators are thermally sensitive, and she's already exploring novel heat transfer methods.\n\nShe wants to design the photonic systems that enable the optical networks she used to deploy.`,
+    unlocks: ['turning-point', 'thermal']
+  },
+  education: {
+    patterns: [/education|northeastern|master|degree|study|school|universit|academ|gpa|course/i],
+    response: `**Current:** MS in Telecommunication Networks at Northeastern University\n\nShe came to Northeastern planning to go deeper into network architecture — maybe 5G, maybe protocol optimization. The HyperLight interview redirected her toward device physics.\n\nHer education combines with 7 years of field engineering, making her one of the more experienced students in her program. She brings real-world deployment context that most graduate students don't have.`,
+    unlocks: ['masters']
+  },
+  vision: {
+    patterns: [/vision|future|goal|where|going|become|plan|ambition|dream|aspir|long.?term/i],
+    response: `Grace's vision is specific:\n\n**Short-term:** Join a photonics lab or team where she can learn device physics, lab characterization, and chip-level design — while contributing her systems thinking, Python automation, and optical network expertise.\n\n**Medium-term:** Become someone who can design photonic interconnects while thinking about how they perform at scale — 10,000 devices in a rack, generating heat, handling real traffic.\n\n**Long-term:** Bridge the gap between photonic device design and the networks they enable. Design the chips AND understand the systems they go into.\n\n**Her bet:** The world needs people who understand both the chips and the networks. Someone who can test a device while asking "how does this scale?" That's the person she's becoming.`,
+    unlocks: ['turning-point']
+  },
+  thermal: {
+    patterns: [/thermal|heat|cool|temperature|acoustic|sound|transfer/i],
+    response: `Grace's acoustic thermal research connects her past and future perfectly:\n\n**The insight:** Photonic chips face the same thermal management challenges as data centers — just at a different scale. Microring resonators are thermally sensitive; temperature drift shifts their resonance wavelength.\n\n**Her approach:** She's exploring whether sound waves can enhance heat transfer in high-density systems. It's unconventional, which is exactly her style.\n\n**Why it matters for photonics:** Thermal stability is one of the biggest challenges in silicon photonics. A researcher who thinks about cooling at both the rack scale and the chip scale brings a unique perspective to the problem.`,
+    unlocks: ['thermal']
+  },
+  contact: {
+    patterns: [/contact|reach|email|phone|linkedin|connect|resume|cv/i],
+    response: `Want to connect with Grace? She's open to conversations about photonics internships, research collaborations, and mentorship opportunities.\n\nReach out through Northeastern University's career services or her professional network. She's actively seeking photonics lab positions where she can contribute systems-level expertise while learning device physics.`
+  },
+  fallback: {
+    response: `I'm not sure I have a specific answer for that, but here's what I can tell you about Grace:\n\n• **Background** — 7 years deploying submarine cables across Africa\n• **Pivot** — Moving from network scale to device-level photonics\n• **Projects** — GlitchWitch (VR), PANDERMA (AI), thermal research\n• **Skills** — Systems thinking, Python, optical networks, project management\n• **Goal** — Join a photonics team to learn device physics\n\nTry asking something specific, or click a topic in the journey map!`
+  }
+};
+
+const quickActions = [
+  "What's Grace's background?",
+  "Tell me about the Mach-Zehnder moment",
+  "What skills does she bring?",
+  "Why should a photonics team hire her?",
+  "What are her projects?",
+  "What's her vision?",
+];
+
+// ── Render Journey Map ──
+function renderJourney() {
+  const list = document.getElementById('journey-list');
+  list.innerHTML = journeyData.map((node, i) => `
+    <div class="journey-node ${exploredTopics.has(node.id) ? 'completed' : ''} ${currentPanel === node.id ? 'active' : ''}"
+         onclick="openPanel('${node.id}')" data-id="${node.id}">
+      <div>
+        <div class="node-dot"></div>
+        ${i < journeyData.length - 1 ? '<div class="node-line"></div>' : ''}
+      </div>
+      <div class="node-info">
+        <h3>${node.title}</h3>
+        <p>${node.subtitle}</p>
+        <span class="node-badge">${node.badge}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderAchievements() {
+  const list = document.getElementById('achievements-list');
+  list.innerHTML = achievements.map(a => `
+    <div class="achievement ${unlockedAchievements.has(a.unlockTopic) ? 'unlocked' : 'locked'}">
+      <div class="achievement-icon">${unlockedAchievements.has(a.unlockTopic) ? a.icon : '🔒'}</div>
+      <div>
+        <div class="achievement-name">${a.name}</div>
+        <div class="achievement-desc">${unlockedAchievements.has(a.unlockTopic) ? a.desc : 'Keep exploring to unlock'}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderQuickActions() {
+  document.getElementById('quick-actions').innerHTML = quickActions.map(q =>
+    `<button class="quick-btn" onclick="sendMessage('${q.replace(/'/g, "\\'")}')">${q}</button>`
+  ).join('');
+}
+
+function updateXP() {
+  const count = exploredTopics.size;
+  const total = journeyData.length;
+  const pct = (count / total) * 100;
+  document.getElementById('xp-fill').style.width = pct + '%';
+  document.getElementById('xp-text').textContent = `${count} / ${total} topics explored`;
+
+  // Check for "all explored" achievement
+  if (count >= total) {
+    unlockAchievement('_all');
+  }
+}
+
+function unlockAchievement(topic) {
+  if (!unlockedAchievements.has(topic)) {
+    unlockedAchievements.add(topic);
+    renderAchievements();
+  }
+}
+
+function exploreTopic(id) {
+  if (!exploredTopics.has(id)) {
+    exploredTopics.add(id);
+    updateXP();
+    renderJourney();
+
+    // Check achievement
+    const ach = achievements.find(a => a.unlockTopic === id);
+    if (ach) unlockAchievement(id);
+  }
+}
+
+// ── Info Panel ──
+function openPanel(id) {
+  const node = journeyData.find(n => n.id === id);
+  if (!node) return;
+
+  currentPanel = id;
+  exploreTopic(id);
+
+  const panel = document.getElementById('info-panel');
+  panel.innerHTML = `
+    <button class="close-panel" onclick="closePanel()">✕</button>
+    <h2>${node.title}</h2>
+    <div class="subtitle">${node.subtitle}</div>
+    <div class="content">${node.content}</div>
+  `;
+  panel.classList.add('visible');
+  renderJourney();
+}
+
+function closePanel() {
+  currentPanel = null;
+  document.getElementById('info-panel').classList.remove('visible');
+  renderJourney();
+}
+
+// ── Chat Agent ──
+function addMessage(text, type) {
+  const messages = document.getElementById('chat-messages');
+  const msg = document.createElement('div');
+  msg.className = `message ${type}`;
+  msg.innerHTML = `
+    <div class="message-label">${type === 'agent' ? 'Grace\'s Agent' : 'You'}</div>
+    <div class="message-bubble">${formatText(text)}</div>
+  `;
+  messages.appendChild(msg);
+  messages.scrollTop = messages.scrollHeight;
+  return msg;
+}
+
+function formatText(text) {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/^> (.+)$/gm, '<blockquote style="border-left:2px solid var(--accent);padding-left:12px;margin:8px 0;color:var(--text-dim)">$1</blockquote>')
+    .replace(/^• (.+)$/gm, '<div style="padding-left:12px;margin:2px 0">• $1</div>')
+    .replace(/\n/g, '<br>');
+}
+
+function showTyping() {
+  const messages = document.getElementById('chat-messages');
+  const typing = document.createElement('div');
+  typing.className = 'message agent';
+  typing.id = 'typing';
+  typing.innerHTML = `
+    <div class="message-label">Grace's Agent</div>
+    <div class="typing-indicator">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>
+  `;
+  messages.appendChild(typing);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function removeTyping() {
+  const typing = document.getElementById('typing');
+  if (typing) typing.remove();
+}
+
+function getResponse(input) {
+  const lower = input.toLowerCase();
+
+  for (const [key, data] of Object.entries(knowledgeBase)) {
+    if (key === 'fallback') continue;
+    if (data.patterns && data.patterns.some(p => p.test(lower))) {
+      if (data.unlocks) data.unlocks.forEach(id => exploreTopic(id));
+      return data.response;
+    }
+  }
+
+  return knowledgeBase.fallback.response;
+}
+
+function sendMessage(text) {
+  if (!text.trim()) return;
+
+  addMessage(text, 'user');
+  document.getElementById('chat-input').value = '';
+  showTyping();
+
+  // Simulate thinking delay
+  const delay = 400 + Math.random() * 800;
+  setTimeout(() => {
+    removeTyping();
+    const response = getResponse(text);
+    addMessage(response, 'agent');
+  }, delay);
+}
+
+// ── Input Handling ──
+document.getElementById('chat-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    sendMessage(e.target.value);
+  }
+});
+
+document.getElementById('send-btn').addEventListener('click', () => {
+  sendMessage(document.getElementById('chat-input').value);
+});
+
+// ── Initialize ──
+renderJourney();
+renderAchievements();
+renderQuickActions();
+updateXP();
+
+// Welcome message
+setTimeout(() => {
+  addMessage(
+    `Welcome! I'm an interactive agent that knows Grace Mosota's full story — from deploying submarine cables across Africa to pursuing photonic device physics.\n\n**Click topics** in the journey map on the left to explore her career path, or **ask me anything** below.\n\nTry: "What's Grace's background?" or "Why should a photonics team hire her?"`,
+    'agent'
+  );
+}, 500);
+</script>
+
+</body>
+</html>

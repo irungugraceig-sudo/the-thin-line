@@ -184,7 +184,7 @@ app.post('/api/chat/stream', async (req, res) => {
 
 // Serve the main page
 app.get('/', (req, res) => {
-  res.sendFile(join(__dirname, 'the-thin-line.html'));
+  res.sendFile(join(__dirname, 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
